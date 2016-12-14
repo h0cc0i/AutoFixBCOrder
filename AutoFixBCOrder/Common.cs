@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Data.OleDb;
 using System.Data;
 using System.IO;
+using System.Globalization;
 
 namespace AutoFixBCOrder
 {
@@ -186,12 +187,12 @@ namespace AutoFixBCOrder
             if (excelfile.Substring(excelfile.Length - 4) == "xlsx")
             {
                 connString = "Provider=Microsoft.ACE.OLEDB.12.0;" +
-              "Data Source=" + excelfile + ";Mode=ReadWrite;Extended Properties=\"Excel 12.0 Xml;HDR=NO;IMEX=1\"";
+              "Data Source=" + excelfile + ";Mode=ReadWrite;Extended Properties=\"Excel 12.0 Xml;Importmixedtypes=text;HDR=NO;IMEX=1\"";
             }
             else
             {
                 connString = "Provider=Microsoft.Jet.OLEDB.4.0;" +
-                      "Data Source=" + excelfile + ";Mode=ReadWrite;Extended Properties=\"Excel 8.0;HDR=NO;IMEX=1\"";
+                      "Data Source=" + excelfile + ";Mode=ReadWrite;Extended Properties=\"Excel 8.0;IMEX=1;HDR=NO;TypeGuessRows=0;ImportMixedTypes=Text\"";
             }
             #endregion
 
@@ -202,8 +203,6 @@ namespace AutoFixBCOrder
 
                 // get data table cotaining the schema 
                 dtb = ObjConn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-
-                //Check ngao
 
                 string SheetName = dtb.Rows[0]["TABLE_NAME"].ToString();
                 if (SheetName == "_xlnm#_FilterDatabase")
@@ -413,12 +412,11 @@ namespace AutoFixBCOrder
             #endregion
 
 
-
             return _dtbDes;
         }
         #endregion
 
-
+       
 
     }
 }

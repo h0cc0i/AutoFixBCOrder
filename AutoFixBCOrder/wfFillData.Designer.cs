@@ -29,24 +29,25 @@
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.panel3 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.btnSource = new System.Windows.Forms.Button();
             this.btnParam = new System.Windows.Forms.Button();
             this.btnFill = new System.Windows.Forms.Button();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tbpSource = new System.Windows.Forms.TabPage();
-            this.tbpParam = new System.Windows.Forms.TabPage();
             this.dtgSource = new System.Windows.Forms.DataGridView();
+            this.tbpParam = new System.Windows.Forms.TabPage();
             this.dtgParam = new System.Windows.Forms.DataGridView();
+            this.btnAutoFix = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
-            this.panel3.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.panel3.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tbpSource.SuspendLayout();
-            this.tbpParam.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dtgSource)).BeginInit();
+            this.tbpParam.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dtgParam)).BeginInit();
             this.SuspendLayout();
             // 
@@ -59,27 +60,11 @@
             this.panel1.Size = new System.Drawing.Size(888, 40);
             this.panel1.TabIndex = 0;
             // 
-            // panel2
-            // 
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 331);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(888, 40);
-            this.panel2.TabIndex = 1;
-            // 
-            // panel3
-            // 
-            this.panel3.Controls.Add(this.tabControl1);
-            this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel3.Location = new System.Drawing.Point(0, 40);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(888, 291);
-            this.panel3.TabIndex = 2;
-            // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.ColumnCount = 5;
+            this.tableLayoutPanel1.ColumnCount = 6;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
@@ -87,6 +72,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnSource, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnParam, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnFill, 3, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnAutoFix, 4, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -134,6 +120,23 @@
             this.btnFill.UseVisualStyleBackColor = true;
             this.btnFill.Click += new System.EventHandler(this.btnFill_Click);
             // 
+            // panel2
+            // 
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(0, 331);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(888, 40);
+            this.panel2.TabIndex = 1;
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.tabControl1);
+            this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel3.Location = new System.Drawing.Point(0, 40);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(888, 291);
+            this.panel3.TabIndex = 2;
+            // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tbpSource);
@@ -156,6 +159,16 @@
             this.tbpSource.Text = "Data Source";
             this.tbpSource.UseVisualStyleBackColor = true;
             // 
+            // dtgSource
+            // 
+            this.dtgSource.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dtgSource.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dtgSource.Location = new System.Drawing.Point(3, 3);
+            this.dtgSource.Name = "dtgSource";
+            this.dtgSource.RowTemplate.Height = 21;
+            this.dtgSource.Size = new System.Drawing.Size(874, 249);
+            this.dtgSource.TabIndex = 0;
+            // 
             // tbpParam
             // 
             this.tbpParam.Controls.Add(this.dtgParam);
@@ -167,16 +180,6 @@
             this.tbpParam.Text = "Data Param";
             this.tbpParam.UseVisualStyleBackColor = true;
             // 
-            // dtgSource
-            // 
-            this.dtgSource.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dtgSource.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dtgSource.Location = new System.Drawing.Point(3, 3);
-            this.dtgSource.Name = "dtgSource";
-            this.dtgSource.RowTemplate.Height = 21;
-            this.dtgSource.Size = new System.Drawing.Size(874, 249);
-            this.dtgSource.TabIndex = 0;
-            // 
             // dtgParam
             // 
             this.dtgParam.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -186,6 +189,19 @@
             this.dtgParam.RowTemplate.Height = 21;
             this.dtgParam.Size = new System.Drawing.Size(874, 249);
             this.dtgParam.TabIndex = 0;
+            // 
+            // btnAutoFix
+            // 
+            this.btnAutoFix.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnAutoFix.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAutoFix.ForeColor = System.Drawing.Color.Blue;
+            this.btnAutoFix.Location = new System.Drawing.Point(473, 3);
+            this.btnAutoFix.Name = "btnAutoFix";
+            this.btnAutoFix.Size = new System.Drawing.Size(144, 34);
+            this.btnAutoFix.TabIndex = 3;
+            this.btnAutoFix.Text = "Auto Fix";
+            this.btnAutoFix.UseVisualStyleBackColor = true;
+            this.btnAutoFix.Click += new System.EventHandler(this.btnAutoFix_Click);
             // 
             // wfFillData
             // 
@@ -200,12 +216,12 @@
             this.Name = "wfFillData";
             this.Text = "wfFillData";
             this.panel1.ResumeLayout(false);
-            this.panel3.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tbpSource.ResumeLayout(false);
-            this.tbpParam.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dtgSource)).EndInit();
+            this.tbpParam.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dtgParam)).EndInit();
             this.ResumeLayout(false);
 
@@ -225,5 +241,6 @@
         private System.Windows.Forms.DataGridView dtgSource;
         private System.Windows.Forms.TabPage tbpParam;
         private System.Windows.Forms.DataGridView dtgParam;
+        private System.Windows.Forms.Button btnAutoFix;
     }
 }
