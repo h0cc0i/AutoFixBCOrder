@@ -429,8 +429,10 @@ namespace AutoFixBCOrder
             byte[] bytes = File.ReadAllBytes(_PathFile);
 
             #region 20161206 - BotJava - Edit font
+            //BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+
             string arialuniTff = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts),
-                                     "ARIALUNI.TTF");
+                                 "ARIALUNI.TTF");
             BaseFont bf = BaseFont.CreateFont(arialuniTff, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
             iTextSharp.text.Font blackFont = new iTextSharp.text.Font(bf, 12);
