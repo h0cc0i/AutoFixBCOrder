@@ -28,6 +28,9 @@ namespace AutoFixBCOrder
         System.Data.DataTable _dtbBCExcel;
         System.Data.DataTable _dtbShukko;
 
+        System.Data.DataTable _dtbSeihin;
+        System.Data.DataTable _dtbBuHin;
+        System.Data.DataTable _dtbJuchuuZan;
         #endregion
 
         public AutoFixBCOrder()
@@ -43,10 +46,30 @@ namespace AutoFixBCOrder
                 OpenFileDialog _of = new OpenFileDialog();
                 _of.Filter = "All Files (*.*)|*.*";
                 _of.FilterIndex = 1;
+                _of.Multiselect = true;
                 if (_of.ShowDialog() == DialogResult.OK)
                 {
-                    //20161207 - BotJava - Convert to Excel data
-                    ConvertPdfToExcel(_of.FileName);
+                    for (int i = 0; i < _of.FileNames.Count(); i++)
+                    {
+                        if (_of.FileNames[i].ToString().Contains("部品"))
+                        {
+                            #region 20161218 - BotFJP - Auto Get dtb 部品 and Fix Data base csv -> xls
+
+                            #endregion
+                        }
+                        else if (_of.FileNames[i].ToString().Contains("製品"))
+                        {
+
+                        }
+                        else if (_of.FileNames[i].ToString().Contains("受注残"))
+                        {
+
+                        }
+                        else if (_of.FileNames[i].ToString().Contains("Source"))
+                        {
+
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -324,28 +347,7 @@ namespace AutoFixBCOrder
 
         private void get棚NoAnd組込ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
-            {
-                foreach (DataRow _rowBCExcel in _dtbBCExcel.Rows)
-                {
-                    foreach (DataRow _rowShukko in _dtbShukko.Rows)
-                    {
-                        if (_rowBCExcel["注文番号"].ToString() == _rowShukko["注文番号"].ToString())
-                        {
-                            _rowBCExcel["棚番号"] = _rowShukko["棚番号"].ToString();
-                            _rowBCExcel["組込番号"] = _rowShukko["組込番号"].ToString();
-                            break;
-                        }
-                    }
-                }
-                dtgSourceTana.DataSource = _dtbBCExcel;
 
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
         }
 
         #endregion
@@ -501,7 +503,6 @@ namespace AutoFixBCOrder
             }
         }
         #endregion
-
 
         #region 20161213 - BotFJP - AutoFillToDataTable
         /// Input  : have 2 table and multiple column

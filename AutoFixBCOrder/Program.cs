@@ -29,7 +29,7 @@ namespace AutoFixBCOrder
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new AutoFixBCOrder());
+            Application.Run(new wfFillData());
         }
     }
 }

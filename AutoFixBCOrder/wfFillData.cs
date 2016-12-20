@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace AutoFixBCOrder
 {
@@ -15,6 +16,12 @@ namespace AutoFixBCOrder
         #region Define Variable
         System.Data.DataTable _dtbSource;
         System.Data.DataTable _dtbParam;
+
+        DataTable _dtbSeihin;
+        DataTable _dtbBuhin;
+        DataTable _dtbJuchuu;
+        DataTable _dtbSourceTana;
+        DataTable _dtbSourceExcel; // List 図面番号　と　注文番号　Convert from PDf file
         #endregion
         public wfFillData()
         {
@@ -32,8 +39,14 @@ namespace AutoFixBCOrder
                 _of.Multiselect = false;
                 if (_of.ShowDialog() == DialogResult.OK)
                 {
-                    _dtbSource = Common.GetDataTable(_of.FileName);
-                    dtgSource.DataSource = AutoFixExcelFileMonitor(_dtbSource);
+                    #region 20161220 - BotFjP - Get Data BC Source Excel from Excel
+                    _dtbSourceExcel = Common.CustomGetDataTable(_of.FileName);
+
+                    //20161206 - BotJava - add column for datatable
+                    _dtbSourceExcel.Columns.Add("組込番号", typeof(String));
+                    _dtbSourceExcel.Columns.Add("棚番号", typeof(String));
+                    dtgSource.DataSource = _dtbSourceExcel;
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -46,9 +59,7 @@ namespace AutoFixBCOrder
         #region 20161213 - BotFJP - Event btnParam click
         private void btnParam_Click(object sender, EventArgs e)
         {
-            DataTable _dtbSeihin;
-            DataTable _dtbBuhin;
-            DataTable _dtbJuchuu;
+
             try
             {
                 OpenFileDialog _of = new OpenFileDialog();
@@ -63,29 +74,125 @@ namespace AutoFixBCOrder
                     _dtbBuhin = new DataTable();
                     _dtbJuchuu = new DataTable();
 
-                    // dtb 製品負荷　＆＆　dtb 部品負荷
+                    #region 20161220 - BotFjP - Auto Get Data form Excel to Data Table
                     for (int i = 0; i < _of.FileNames.Count(); i++)
                     {
                         if (_of.FileNames[i].Contains("製品負荷"))
                         {
-                            _dtbSeihin = SeihinAutoFixExcelFileCSVConvertXLS(Common.GetDataTable(_of.FileNames[i]));
-                            dtgSource.DataSource = _dtbSeihin;
+                            System.Data.DataTable _dtbTemp = Common.GetDataTable(_of.FileNames[i]);
+                            _dtbSeihin = SeihinAutoFixExcelFileCSVConvertXLS(_dtbTemp);
                         }
                         else if (_of.FileNames[i].Contains("部品負荷"))
                         {
                             _dtbBuhin = BuhinAutoFixExcelFileCSVConvertXLS(Common.GetDataTable(_of.FileNames[i]));
-                            dtgParam.DataSource = _dtbBuhin;
                         }
-                        else if (_of.FileNames[i].Contains("受注残"))
+                        else if (_of.FileNames[i].Contains("受注"))
                         {
+                            _dtbJuchuu = Common.GetDataTable(_of.FileNames[i]);
+                            var _ListParam = new int[] { 0, 12, 17, 21 };
+                            _dtbJuchuu = Common.XLSDataToDataTableFormat(_dtbJuchuu, _ListParam);
+                        }
+                        else if (_of.FileNames[i].Contains("BCSource"))
+                        {
+                            #region 20161220 - BotFjP - Get Data BC Source Excel from Excel
+                            _dtbSourceExcel = Common.CustomGetDataTable(_of.FileNames[i]);
 
+                            //20161206 - BotJava - add column for datatable
+                            _dtbSourceExcel.Columns.Add("組込番号", typeof(String));
+                            _dtbSourceExcel.Columns.Add("棚番号", typeof(String));
+                            dtgSource.DataSource = _dtbSourceExcel;
+                            #endregion
                         }
                     }
-                    dtgSource.DataSource = CompareDataAndFormat(_dtbSeihin, _dtbBuhin);
+                    #endregion
+
+                    #region 20161220 - BotFJP - Set Data Table 図面番号　受注番号　組込番号 to Data Table Param
+                    _dtbParam = CompareDataAndFormat(_dtbSeihin, _dtbBuhin);
+                    dtgParam.DataSource = _dtbParam;
+                    #endregion
+
+                    #region Get 注文番号　to dtb Param
+                    for (int i = _dtbParam.Rows.Count - 1; i > 0; i--)
+                    {
+                        for (int j = _dtbJuchuu.Rows.Count - 1; j > 0; j--)
+                        {
+                            if (_dtbParam.Rows[i]["受注番号"].ToString() == _dtbJuchuu.Rows[j]["受注番号"].ToString())
+                            {
+                                _dtbParam.Rows[i]["注文番号"] = _dtbJuchuu.Rows[j]["注文番号"].ToString();
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region 20161219 - BotFJP - Get 棚番号 to dtb Param
+                    if (_dtbSourceTana != null)
+                    {
+                        for (int i = 0; i < _dtbParam.Rows.Count - 1; i++)
+                        {
+                            for (int j = 0; j < _dtbSourceTana.Rows.Count; j++)
+                            {
+                                if (_dtbParam.Rows[i]["図面番号"].ToString() == _dtbSourceTana.Rows[j]["部品図番"].ToString())
+                                {
+                                    _dtbParam.Rows[i]["棚番号"] = _dtbSourceTana.Rows[j]["棚番号"].ToString();
+                                    break;
+                                }
+                                else
+                                {
+                                    if (j == (_dtbSourceTana.Rows.Count - 1))
+                                    {
+                                        _dtbParam.Rows[i]["棚番号"] = "なし";
+                                    }
+                                }
+                            }
+                        }
+                        _dtbParam.AcceptChanges();
+                        dtgParam.DataSource = _dtbParam;
+                    }
+                    #endregion
+
+                    #region 20161219 - BotFJP - Compare dtb Param and dtb Source => output: dtbSource
+                    for (int i = 0; i < _dtbSourceExcel.Rows.Count; i++)
+                    {
+                        for (int j = 0; j < _dtbParam.Rows.Count; j++)
+                        {
+                            if (_dtbSourceExcel.Rows[i]["注文番号"].ToString() == _dtbParam.Rows[j]["注文番号"].ToString())
+                            {
+                                _dtbSourceExcel.Rows[i]["棚番号"] = _dtbParam.Rows[j]["棚番号"].ToString();
+                                _dtbSourceExcel.Rows[i]["組込番号"] = _dtbParam.Rows[j]["組込番号"].ToString();
+                                break;
+                            }
+                        }
+                        _dtbSourceExcel.AcceptChanges();
+                        dtgSource.DataSource = _dtbSourceExcel;
+                    }
+                    #endregion
+
+                    #region 20161220 - BotFjP - Edit Pdf with data Table Param is Data Source
+                    //for (int i = 0; i < _of.FileNames.Count(); i++)
+                    //{
+                    //    if (_of.FileNames[i].Contains(".pdf"))
+                    //    {
+                    //        string _newPathPdf = string.Empty ;
+                    //        //Create save file Dialog
+                    //        SaveFileDialog _savefile = new SaveFileDialog();
+                    //        _savefile.DefaultExt = "pdf";
+                    //        _savefile.Filter = "Pdf files (*.pdf)|*.pdf|All files (*.*)|*.*";
+                    //        if (_savefile.ShowDialog() == DialogResult.OK)
+                    //        {
+                    //             _newPathPdf = _savefile.FileName;
+                    //            System.IO.File.Copy(_of.FileNames[i].ToString(), _newPathPdf);
+                    //        }
+                    //        Common.EditMultiPdf(_newPathPdf, _dtbSourceExcel);
+                    //    }
+                    //}
+
+                    #endregion
+
                 }
             }
             catch (Exception ex)
             {
+                Common.KillAllProccessByName("EXCEL");
                 MessageBox.Show(ex.ToString());
             }
         }
@@ -96,7 +203,22 @@ namespace AutoFixBCOrder
         {
             try
             {
-                dtgSource.DataSource = AutoSearchAndFillDataTable(_dtbSource, _dtbParam);
+                #region 20161219 - BotFJP - Compare dtb Param and dtb Source => output: dtbSource
+                for (int i = 0; i < _dtbSourceExcel.Rows.Count; i++)
+                {
+                    for (int j = 0; j < _dtbParam.Rows.Count; j++)
+                    {
+                        if (_dtbSourceExcel.Rows[i]["注文番号"].ToString() == _dtbParam.Rows[j]["注文番号"].ToString())
+                        {
+                            _dtbSourceExcel.Rows[i]["棚番号"] = _dtbParam.Rows[j]["棚番号"].ToString();
+                            _dtbSourceExcel.Rows[i]["組込番号"] = _dtbParam.Rows[j]["組込番号"].ToString();
+                            break;
+                        }
+                    }
+                    _dtbSourceExcel.AcceptChanges();
+                    dtgSource.DataSource = _dtbSourceExcel;
+                }
+                #endregion
             }
             catch (Exception ex)
             {
@@ -257,25 +379,25 @@ namespace AutoFixBCOrder
         #endregion
 
         #region 20161214 - BotFJP - Auto Fix Excel 製品 File Base by csv -> xls
-        public System.Data.DataTable SeihinAutoFixExcelFileCSVConvertXLS(System.Data.DataTable _dtbSource)
+        public System.Data.DataTable SeihinAutoFixExcelFileCSVConvertXLS(System.Data.DataTable _dtbExec)
         {
             #region 20161214 - BotFJP - Delete columns not use
-            for (int i = _dtbSource.Columns.Count - 1; i >= 0; i--)
+            for (int i = _dtbExec.Columns.Count - 1; i >= 0; i--)
             {
                 if (new[] { 29, 31, 34 }.Contains(i))
                 {
                     continue;
                 }
                 else
-                    _dtbSource.Columns.RemoveAt(i);
+                    _dtbExec.Columns.RemoveAt(i);
             }
 
-            _dtbSource.Columns[0].ColumnName = "納期";
-            _dtbSource.Columns[1].ColumnName = "図面番号";
+            _dtbExec.Columns[0].ColumnName = "納期";
+            _dtbExec.Columns[1].ColumnName = "図面番号";
             //部品=>組込番号          製品=>受注番号
-            _dtbSource.Columns[2].ColumnName = "受注番号";
-            _dtbSource.Columns.Add("組込番号", typeof(string));
-            _dtbSource.AcceptChanges();
+            _dtbExec.Columns[2].ColumnName = "受注番号";
+            _dtbExec.Columns.Add("組込番号", typeof(string));
+            _dtbExec.AcceptChanges();
 
             #endregion
 
@@ -286,7 +408,7 @@ namespace AutoFixBCOrder
             //}
             //_dtbSource.AcceptChanges();
             #endregion
-            return _dtbSource;
+            return _dtbExec;
         }
         #endregion
 
@@ -317,7 +439,7 @@ namespace AutoFixBCOrder
             //IF 納期 月　1,2 => Replace 年 = 年 + 1      
             foreach (DataRow _row in _dtbSource.Rows)
             {
-                if (new string[] { "1","2"}.Contains(_row["納期"].ToString().Split('/')[0]))
+                if (new string[] { "1", "2" }.Contains(_row["納期"].ToString().Split('/')[0]))
                 {
                     _row["納期"] = _row["納期"].ToString().Replace("2016", "2017");
                 }
@@ -325,11 +447,12 @@ namespace AutoFixBCOrder
             _dtbSource.AcceptChanges();
             #endregion
 
-            #region 20161214 - BotFJP - Add column Status and Data
+            #region 20161214 - BotFJP - Add column Status and 注文番号
             DataColumn _newcol = new DataColumn("Status", typeof(string));
             _newcol.DefaultValue = "True";
             _dtbSource.Columns.Add(_newcol);
             _dtbSource.AcceptChanges();
+
             #endregion
             return _dtbSource;
         }
@@ -348,20 +471,61 @@ namespace AutoFixBCOrder
                         (_dtbSeihin.Rows[i]["図面番号"].ToString() == _dtbBuhin.Rows[j]["図面番号"].ToString()))
                         {
                             //Get Data 組込番号 for dtb製品
-                            _dtbSeihin.Rows[i]["組込番号"] = _dtbBuhin.Rows[i]["組込番号"].ToString();
+                            _dtbSeihin.Rows[i]["組込番号"] = _dtbBuhin.Rows[j]["組込番号"].ToString();
                             //Set data Status -> False for dtb部品
                             _dtbBuhin.Rows[j]["Status"] = "False";
                         }
                     }
                     else
                         continue;
-
                 }
             }
+            _dtbSeihin.Columns.Add("注文番号", typeof(string));
+            _dtbSeihin.Columns.Add("棚番号", typeof(string));
             _dtbSeihin.AcceptChanges();
             return _dtbSeihin;
         }
         #endregion
+
+        private void wfFillData_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                #region Load 棚番号List from directory
+
+                string _PathTana = Directory.GetCurrentDirectory() + "/Source棚.xlsx";
+                if (!File.Exists(_PathTana))
+                {
+                    //2016/10/17 HonC : ask for add DefineListBeckMan
+                    DialogResult _dlgask = MessageBox.Show("インポート棚番号リストよろしいですか ?", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (_dlgask == DialogResult.Yes)
+                    {
+                        OpenFileDialog _of = new OpenFileDialog();
+                        _of.Filter = "Excel Files|*.xlsx;*.xls;*.xlsm";
+                        _of.Multiselect = false;
+                        if (_of.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            // copy ListDefineBC to Current Directory
+                            System.IO.File.Copy(_of.FileName, _PathTana, true);
+
+                        }
+                    }
+                }
+
+                #region 20161219 - BotFJP - Load data 棚番号 from Source
+                System.Data.DataTable _dtbTemp = Common.GetDataTable(_PathTana);
+                _dtbSourceTana = Common.AutoFixColumnName(_dtbTemp);
+                _dtbSourceTana.Columns[2].ColumnName = "棚番号";
+                #endregion
+
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
     }
 }
+
 

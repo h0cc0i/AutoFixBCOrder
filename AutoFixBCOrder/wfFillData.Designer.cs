@@ -30,9 +30,6 @@
         {
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.btnSource = new System.Windows.Forms.Button();
-            this.btnParam = new System.Windows.Forms.Button();
-            this.btnFill = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -40,7 +37,9 @@
             this.dtgSource = new System.Windows.Forms.DataGridView();
             this.tbpParam = new System.Windows.Forms.TabPage();
             this.dtgParam = new System.Windows.Forms.DataGridView();
-            this.btnAutoFix = new System.Windows.Forms.Button();
+            this.btnParam = new System.Windows.Forms.Button();
+            this.btnExport = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -69,10 +68,9 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.btnSource, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnParam, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnFill, 3, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnAutoFix, 4, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnExport, 3, 0);
+            this.tableLayoutPanel1.Controls.Add(this.button1, 4, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -80,45 +78,6 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(888, 40);
             this.tableLayoutPanel1.TabIndex = 0;
-            // 
-            // btnSource
-            // 
-            this.btnSource.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnSource.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSource.ForeColor = System.Drawing.Color.Blue;
-            this.btnSource.Location = new System.Drawing.Point(23, 3);
-            this.btnSource.Name = "btnSource";
-            this.btnSource.Size = new System.Drawing.Size(144, 34);
-            this.btnSource.TabIndex = 0;
-            this.btnSource.Text = "Import Source";
-            this.btnSource.UseVisualStyleBackColor = true;
-            this.btnSource.Click += new System.EventHandler(this.btnSource_Click);
-            // 
-            // btnParam
-            // 
-            this.btnParam.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnParam.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnParam.ForeColor = System.Drawing.Color.Blue;
-            this.btnParam.Location = new System.Drawing.Point(173, 3);
-            this.btnParam.Name = "btnParam";
-            this.btnParam.Size = new System.Drawing.Size(144, 34);
-            this.btnParam.TabIndex = 1;
-            this.btnParam.Text = "Import Param";
-            this.btnParam.UseVisualStyleBackColor = true;
-            this.btnParam.Click += new System.EventHandler(this.btnParam_Click);
-            // 
-            // btnFill
-            // 
-            this.btnFill.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnFill.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFill.ForeColor = System.Drawing.Color.Blue;
-            this.btnFill.Location = new System.Drawing.Point(323, 3);
-            this.btnFill.Name = "btnFill";
-            this.btnFill.Size = new System.Drawing.Size(144, 34);
-            this.btnFill.TabIndex = 2;
-            this.btnFill.Text = "Auto Fill";
-            this.btnFill.UseVisualStyleBackColor = true;
-            this.btnFill.Click += new System.EventHandler(this.btnFill_Click);
             // 
             // panel2
             // 
@@ -187,21 +146,53 @@
             this.dtgParam.Location = new System.Drawing.Point(3, 3);
             this.dtgParam.Name = "dtgParam";
             this.dtgParam.RowTemplate.Height = 21;
-            this.dtgParam.Size = new System.Drawing.Size(874, 249);
+            this.dtgParam.Size = new System.Drawing.Size(874, 259);
             this.dtgParam.TabIndex = 0;
             // 
-            // btnAutoFix
+            // btnParam
             // 
-            this.btnAutoFix.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnAutoFix.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnAutoFix.ForeColor = System.Drawing.Color.Blue;
-            this.btnAutoFix.Location = new System.Drawing.Point(473, 3);
-            this.btnAutoFix.Name = "btnAutoFix";
-            this.btnAutoFix.Size = new System.Drawing.Size(144, 34);
-            this.btnAutoFix.TabIndex = 3;
-            this.btnAutoFix.Text = "Auto Fix";
-            this.btnAutoFix.UseVisualStyleBackColor = true;
-            this.btnAutoFix.Click += new System.EventHandler(this.btnAutoFix_Click);
+            this.btnParam.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnParam.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnParam.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnParam.ForeColor = System.Drawing.Color.Blue;
+            this.btnParam.Image = global::AutoFixBCOrder.Properties.Resources.open_file_icon;
+            this.btnParam.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnParam.Location = new System.Drawing.Point(173, 3);
+            this.btnParam.Name = "btnParam";
+            this.btnParam.Size = new System.Drawing.Size(144, 34);
+            this.btnParam.TabIndex = 1;
+            this.btnParam.Text = "　　インポート";
+            this.btnParam.UseVisualStyleBackColor = true;
+            this.btnParam.Click += new System.EventHandler(this.btnParam_Click);
+            // 
+            // btnExport
+            // 
+            this.btnExport.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExport.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExport.ForeColor = System.Drawing.Color.Blue;
+            this.btnExport.Image = global::AutoFixBCOrder.Properties.Resources.Apps_Pdf_icon;
+            this.btnExport.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnExport.Location = new System.Drawing.Point(323, 3);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(144, 34);
+            this.btnExport.TabIndex = 2;
+            this.btnExport.Text = "出力";
+            this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.Click += new System.EventHandler(this.btnFill_Click);
+            // 
+            // button1
+            // 
+            this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.ForeColor = System.Drawing.Color.Blue;
+            this.button1.Location = new System.Drawing.Point(473, 3);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(144, 34);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "印刷";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // wfFillData
             // 
@@ -215,6 +206,7 @@
             this.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
             this.Name = "wfFillData";
             this.Text = "wfFillData";
+            this.Load += new System.EventHandler(this.wfFillData_Load);
             this.panel1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
@@ -231,9 +223,8 @@
 
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.Button btnSource;
         private System.Windows.Forms.Button btnParam;
-        private System.Windows.Forms.Button btnFill;
+        private System.Windows.Forms.Button btnExport;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TabControl tabControl1;
@@ -241,6 +232,6 @@
         private System.Windows.Forms.DataGridView dtgSource;
         private System.Windows.Forms.TabPage tbpParam;
         private System.Windows.Forms.DataGridView dtgParam;
-        private System.Windows.Forms.Button btnAutoFix;
+        private System.Windows.Forms.Button button1;
     }
 }

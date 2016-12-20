@@ -8,6 +8,9 @@ using System.Data.OleDb;
 using System.Data;
 using System.IO;
 using System.Globalization;
+using iTextSharp.text.pdf;
+using iTextSharp.text;
+using System.Diagnostics;
 
 namespace AutoFixBCOrder
 {
@@ -399,7 +402,7 @@ namespace AutoFixBCOrder
 
                     // get value of cell 
                     _row["品名"] = _excelWS.get_Range("C5", misValue).Text.ToString();
-                    _row["発注日"] = _excelWS.get_Range("F3", misValue).Text.ToString().Replace("発注日","");
+                    _row["発注日"] = _excelWS.get_Range("F3", misValue).Text.ToString().Replace("発注日", "");
                     _row["注文番号"] = _excelWS.get_Range("A14", misValue).Text.ToString().Split('*')[1].ToString();
                     _dtbDes.Rows.Add(_row);
                 }
@@ -416,7 +419,151 @@ namespace AutoFixBCOrder
         }
         #endregion
 
-       
+        /// <summary>
+        /// Fix Data format from file 負荷 to Data Table
+        /// Get Index of column from _listParam => dont delete
+        /// </summary>
+        /// <param name="_listParam"> List Colums need to execute </param>
+        /// <param name="_dtbSource"> Data Table Source </param>
+        /// <returns></returns>
+        public static System.Data.DataTable CSVDataFukaToDataTableFormat(System.Data.DataTable _dtbSource, int[] _listParam)
+        {
+            #region 20161218 - BotFJP - Delete Columns Not Use
+            for (int i = _dtbSource.Columns.Count - 1; i >= 0; i--)
+            {
+                if (!_listParam.Contains(i))
+                {
+                    _dtbSource.Columns.RemoveAt(i);
+                }
+            }
+            _dtbSource.AcceptChanges();
+            #endregion
+            return _dtbSource;
+        }
 
+
+        /// <summary>
+        /// XLS Data file => Delete Columns and Rows not use and format
+        /// </summary>
+        /// <param name="_dtbSource"> Data Table Source</param>
+        /// <param name="_listParam"> List Param Column is Using</param>
+        /// <returns></returns>
+        public static System.Data.DataTable XLSDataToDataTableFormat(System.Data.DataTable _dtbSource, int[] _ListParam)
+        {
+            
+            #region 20161218 - BotFjP - Delete Columns not use
+            for (int i = _dtbSource.Columns.Count - 1; i >= 0; i--)
+            {
+                if (!_ListParam.Contains(i))
+                    _dtbSource.Columns.RemoveAt(i);
+            }
+
+            //Fix Name of Data Table
+            _dtbSource.Columns[0].ColumnName = "図面番号";
+            _dtbSource.Columns[1].ColumnName = "納期";
+            _dtbSource.Columns[2].ColumnName = "注文番号";
+            _dtbSource.Columns[3].ColumnName = "受注番号";
+            _dtbSource.Rows[0].Delete();
+            _dtbSource.AcceptChanges();
+            #endregion
+
+            #region 20161218 - BotFjP - Delete Rows Not Use
+            for (int i = 0; i < _dtbSource.Rows.Count; i++)
+            {
+                if (string.IsNullOrEmpty(_dtbSource.Rows[i][3].ToString()))
+                    _dtbSource.Rows[i].Delete();
+                else
+                    _dtbSource.Rows[i]["図面番号"] = _dtbSource.Rows[i]["図面番号"].ToString().Split(' ')[0];
+            }
+            _dtbSource.AcceptChanges();
+            _dtbSource.Rows[0].Delete();
+            #endregion
+
+            return _dtbSource;
+        }
+
+
+        #region 20161218 - BotFjP - Fix Column Name of DataTable
+        public static System.Data.DataTable AutoFixColumnName(System.Data.DataTable _dtbSource)
+        {
+            for (int i = 0; i < _dtbSource.Columns.Count - 1; i++)
+            {
+                _dtbSource.Columns[i].ColumnName = _dtbSource.Rows[0][i].ToString();
+            }
+            _dtbSource.Rows[0].Delete();
+            _dtbSource.AcceptChanges();
+            return _dtbSource;
+        }
+        #endregion
+
+        /// <summary>
+        /// Edit Pdf file with Data Source from Data Table Source
+        /// </summary>
+        /// <param name="_PathFile"></param>
+        /// <param name="_dtbSource"></param>
+        public  static  void EditMultiPdf(string _PathFile, System.Data.DataTable _dtbSource)
+        {
+            byte[] bytes = File.ReadAllBytes(_PathFile);
+
+            #region 20161206 - BotJava - Edit font
+            //BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+
+            string arialuniTff = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts),
+                                 "ARIALUNI.TTF");
+            BaseFont bf = BaseFont.CreateFont(arialuniTff, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+            iTextSharp.text.Font blackFont = new iTextSharp.text.Font(bf, 12);
+            #endregion
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                PdfReader reader = new PdfReader(bytes);
+                using (PdfStamper stamper = new PdfStamper(reader, stream))
+                {
+                    int _tempk = 0;
+                    int pages = reader.NumberOfPages;
+                    for (int i = 1; i <= pages; i++)
+                    {
+
+                        #region 20161206 - BotJava - Insert data for first 注文書
+                        // Insert 棚番号
+                        ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i - 1 + _tempk]["棚番号"].ToString(), blackFont), 500f, 575f, 0);
+                        // Insert 出庫番号
+                        ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i - 1 + _tempk]["組込番号"].ToString(), blackFont), 430f, 510f, 0);
+
+                        #endregion
+
+                        #region 20161206 - BotJava - Insert data for second 注文書
+                        if ((i + _tempk) < _dtbSource.Rows.Count)
+                        {
+                            //Insert 棚番号
+                            ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i + _tempk]["棚番号"].ToString(), blackFont), 500f, 287f, 0);
+                            //Insert 出庫番号
+                            ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i + _tempk]["組込番号"].ToString(), blackFont), 430f, 225f, 0);
+                        }
+                        #endregion
+
+                        _tempk++;
+                    }
+                }
+                bytes = stream.ToArray();
+            }
+            File.WriteAllBytes(_PathFile, bytes);
+
+        }
+
+        public static void KillAllProccessByName(string _Name)
+        {
+            var processes = from p in Process.GetProcessesByName(_Name)
+                            select p;
+
+            foreach (var process in processes)
+            {
+                if (process.ProcessName == _Name)
+                    process.Kill();
+                if (process.ProcessName.StartsWith("AcroRd32.exe"))
+                    process.Kill();
+            }
+        }
     }
 }
