@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Threading;
 
 namespace AutoFixBCOrder
 {
@@ -22,6 +23,8 @@ namespace AutoFixBCOrder
         DataTable _dtbJuchuu;
         DataTable _dtbSourceTana;
         DataTable _dtbSourceExcel; // List 図面番号　と　注文番号　Convert from PDf file
+        string _newPathPdf = string.Empty;
+        string _PathSourcePDF = string.Empty;
         #endregion
         public wfFillData()
         {
@@ -74,6 +77,7 @@ namespace AutoFixBCOrder
                     _dtbBuhin = new DataTable();
                     _dtbJuchuu = new DataTable();
 
+                    Cursor.Current = Cursors.WaitCursor;
                     #region 20161220 - BotFjP - Auto Get Data form Excel to Data Table
                     for (int i = 0; i < _of.FileNames.Count(); i++)
                     {
@@ -81,10 +85,12 @@ namespace AutoFixBCOrder
                         {
                             System.Data.DataTable _dtbTemp = Common.GetDataTable(_of.FileNames[i]);
                             _dtbSeihin = SeihinAutoFixExcelFileCSVConvertXLS(_dtbTemp);
+
                         }
                         else if (_of.FileNames[i].Contains("部品負荷"))
                         {
                             _dtbBuhin = BuhinAutoFixExcelFileCSVConvertXLS(Common.GetDataTable(_of.FileNames[i]));
+
                         }
                         else if (_of.FileNames[i].Contains("受注"))
                         {
@@ -92,7 +98,11 @@ namespace AutoFixBCOrder
                             var _ListParam = new int[] { 0, 12, 17, 21 };
                             _dtbJuchuu = Common.XLSDataToDataTableFormat(_dtbJuchuu, _ListParam);
                         }
-                        else if (_of.FileNames[i].Contains("BCSource"))
+                        else if (_of.FileNames[i].Contains(".pdf"))
+                        {
+                            _PathSourcePDF = _of.FileNames[i].ToString();
+                        }
+                        else
                         {
                             #region 20161220 - BotFjP - Get Data BC Source Excel from Excel
                             _dtbSourceExcel = Common.CustomGetDataTable(_of.FileNames[i]);
@@ -102,13 +112,14 @@ namespace AutoFixBCOrder
                             _dtbSourceExcel.Columns.Add("棚番号", typeof(String));
                             dtgSource.DataSource = _dtbSourceExcel;
                             #endregion
-                        }
-                    }
-                    #endregion
 
+                        }
+                        #endregion
+
+
+                    }
                     #region 20161220 - BotFJP - Set Data Table 図面番号　受注番号　組込番号 to Data Table Param
                     _dtbParam = CompareDataAndFormat(_dtbSeihin, _dtbBuhin);
-                    dtgParam.DataSource = _dtbParam;
                     #endregion
 
                     #region Get 注文番号　to dtb Param
@@ -146,7 +157,6 @@ namespace AutoFixBCOrder
                             }
                         }
                         _dtbParam.AcceptChanges();
-                        dtgParam.DataSource = _dtbParam;
                     }
                     #endregion
 
@@ -166,29 +176,16 @@ namespace AutoFixBCOrder
                         dtgSource.DataSource = _dtbSourceExcel;
                     }
                     #endregion
+                    for (int i = 0; i < _of.FileNames.Count(); i++)
+                    {
+                        if (_of.FileNames[i].Contains(".pdf"))
+                        {
+                            _newPathPdf = _of.FileNames[i].ToString();
 
-                    #region 20161220 - BotFjP - Edit Pdf with data Table Param is Data Source
-                    //for (int i = 0; i < _of.FileNames.Count(); i++)
-                    //{
-                    //    if (_of.FileNames[i].Contains(".pdf"))
-                    //    {
-                    //        string _newPathPdf = string.Empty ;
-                    //        //Create save file Dialog
-                    //        SaveFileDialog _savefile = new SaveFileDialog();
-                    //        _savefile.DefaultExt = "pdf";
-                    //        _savefile.Filter = "Pdf files (*.pdf)|*.pdf|All files (*.*)|*.*";
-                    //        if (_savefile.ShowDialog() == DialogResult.OK)
-                    //        {
-                    //             _newPathPdf = _savefile.FileName;
-                    //            System.IO.File.Copy(_of.FileNames[i].ToString(), _newPathPdf);
-                    //        }
-                    //        Common.EditMultiPdf(_newPathPdf, _dtbSourceExcel);
-                    //    }
-                    //}
-
-                    #endregion
-
+                        }
+                    }
                 }
+                Cursor.Current = Cursors.Default;
             }
             catch (Exception ex)
             {
@@ -201,31 +198,20 @@ namespace AutoFixBCOrder
         #region 20161213 - BotFJP - Event btnFull click
         private void btnFill_Click(object sender, EventArgs e)
         {
-            try
+            #region 20161220 - BotFjP - Edit Pdf with data Table Param is Data Source
+            string _newPathPdf = string.Empty;
+            //Create save file Dialog
+            SaveFileDialog _savefile = new SaveFileDialog();
+            _savefile.DefaultExt = "pdf";
+            _savefile.Filter = "Pdf files (*.pdf)|*.pdf|All files (*.*)|*.*";
+            if (_savefile.ShowDialog() == DialogResult.OK)
             {
-                #region 20161219 - BotFJP - Compare dtb Param and dtb Source => output: dtbSource
-                for (int i = 0; i < _dtbSourceExcel.Rows.Count; i++)
-                {
-                    for (int j = 0; j < _dtbParam.Rows.Count; j++)
-                    {
-                        if (_dtbSourceExcel.Rows[i]["注文番号"].ToString() == _dtbParam.Rows[j]["注文番号"].ToString())
-                        {
-                            _dtbSourceExcel.Rows[i]["棚番号"] = _dtbParam.Rows[j]["棚番号"].ToString();
-                            _dtbSourceExcel.Rows[i]["組込番号"] = _dtbParam.Rows[j]["組込番号"].ToString();
-                            break;
-                        }
-                    }
-                    _dtbSourceExcel.AcceptChanges();
-                    dtgSource.DataSource = _dtbSourceExcel;
-                }
-                #endregion
+                _newPathPdf = _savefile.FileName;
+                System.IO.File.Copy(_PathSourcePDF, _newPathPdf);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
+            Common.EditMultiPdf(_newPathPdf, _dtbSourceExcel);
+            #endregion
         }
-
         #endregion
 
         #region 20161213 - BotFJP - AutoFillToDataTable
@@ -290,20 +276,6 @@ namespace AutoFixBCOrder
             #endregion
 
             return _dtb;
-        }
-        #endregion
-
-        #region 20161213 - BotFJP - Event btnAutoFix click
-        private void btnAutoFix_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                dtgParam.DataSource = AutoFixExcel(_dtbSource);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
         }
         #endregion
 
@@ -506,8 +478,11 @@ namespace AutoFixBCOrder
                         if (_of.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
                             // copy ListDefineBC to Current Directory
-                            System.IO.File.Copy(_of.FileName, _PathTana, true);
-
+                            //System.IO.File.Copy(_of.FileName, _PathTana, true);
+                            //File.SetAttributes(_PathTana, FileAttributes.Normal);
+                            #region 20161220 - BotFjP - change method copy file source 棚
+                            File.Move(_of.FileName, _PathTana);
+                            #endregion
                         }
                     }
                 }
@@ -519,12 +494,54 @@ namespace AutoFixBCOrder
                 #endregion
 
                 #endregion
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
         }
+
+        #region 20161220 - BotFjP - Event when click button 印刷
+        private void btnIn_Click(object sender, EventArgs e)
+        {
+            //  Common.PrintPDFFile(_PathSource);
+        }
+        #endregion
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            for (int i = 1; i <= 100; i++)
+            {
+                Thread.Sleep(100);
+                backgroundWorker1.ReportProgress(i);
+            }
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            prBar.Value = e.ProgressPercentage;
+            prBar.Text = e.ProgressPercentage.ToString();
+        }
+
+        #region 20161221 - BotFjP - Function use thread and run proccess bar
+        private void Caculate(int i)
+        {
+            double pow = Math.Pow(i, i);
+        }
+
+        public void DoWork(IProgress<int> progress)
+        {
+            for (int j = 0; j < 1000; j++)
+            {
+                Caculate(j);
+                if (progress != null)
+                {
+                    progress.Report((j + 1) * 100 / 1000);
+                }
+            }
+        }
+        #endregion
     }
 }
 

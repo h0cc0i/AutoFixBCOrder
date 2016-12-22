@@ -11,6 +11,7 @@ using System.Globalization;
 using iTextSharp.text.pdf;
 using iTextSharp.text;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 namespace AutoFixBCOrder
 {
@@ -503,6 +504,8 @@ namespace AutoFixBCOrder
         /// <param name="_dtbSource"></param>
         public  static  void EditMultiPdf(string _PathFile, System.Data.DataTable _dtbSource)
         {
+            try
+            {
             byte[] bytes = File.ReadAllBytes(_PathFile);
 
             #region 20161206 - BotJava - Edit font
@@ -550,6 +553,12 @@ namespace AutoFixBCOrder
             }
             File.WriteAllBytes(_PathFile, bytes);
 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
         }
 
         public static void KillAllProccessByName(string _Name)
@@ -565,5 +574,26 @@ namespace AutoFixBCOrder
                     process.Kill();
             }
         }
+
+        public static void Print(string file, string printer)
+        {
+            try
+            {
+                Process.Start(
+                   Registry.LocalMachine.OpenSubKey(
+                        @"SOFTWARE\Microsoft\Windows\CurrentVersion" +
+                        @"\App Paths\AcroRd32.exe").GetValue("").ToString(),
+                   string.Format("/h /t \"{0}\" \"{1}\"", file, printer));
+            }
+            catch { }
+        }
+
+        public static void PrintPDFFile(string _PDFPath)
+        {
+            Process.Start("LPR -S printerdnsalias -P raw '"+_PDFPath+"'");
+        }
+
+
+
     }
 }
