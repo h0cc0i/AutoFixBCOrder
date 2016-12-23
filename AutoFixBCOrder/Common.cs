@@ -451,7 +451,7 @@ namespace AutoFixBCOrder
         /// <returns></returns>
         public static System.Data.DataTable XLSDataToDataTableFormat(System.Data.DataTable _dtbSource, int[] _ListParam)
         {
-            
+
             #region 20161218 - BotFjP - Delete Columns not use
             for (int i = _dtbSource.Columns.Count - 1; i >= 0; i--)
             {
@@ -502,56 +502,56 @@ namespace AutoFixBCOrder
         /// </summary>
         /// <param name="_PathFile"></param>
         /// <param name="_dtbSource"></param>
-        public  static  void EditMultiPdf(string _PathFile, System.Data.DataTable _dtbSource)
+        public static void EditMultiPdf(string _PathFile, System.Data.DataTable _dtbSource)
         {
             try
             {
-            byte[] bytes = File.ReadAllBytes(_PathFile);
+                byte[] bytes = File.ReadAllBytes(_PathFile);
 
-            #region 20161206 - BotJava - Edit font
-            //BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+                #region 20161206 - BotJava - Edit font
+                //BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
 
-            string arialuniTff = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts),
-                                 "ARIALUNI.TTF");
-            BaseFont bf = BaseFont.CreateFont(arialuniTff, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                string arialuniTff = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts),
+                                     "ARIALUNI.TTF");
+                BaseFont bf = BaseFont.CreateFont(arialuniTff, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
-            iTextSharp.text.Font blackFont = new iTextSharp.text.Font(bf, 12);
-            #endregion
+                iTextSharp.text.Font blackFont = new iTextSharp.text.Font(bf, 12);
+                #endregion
 
-            using (MemoryStream stream = new MemoryStream())
-            {
-                PdfReader reader = new PdfReader(bytes);
-                using (PdfStamper stamper = new PdfStamper(reader, stream))
+                using (MemoryStream stream = new MemoryStream())
                 {
-                    int _tempk = 0;
-                    int pages = reader.NumberOfPages;
-                    for (int i = 1; i <= pages; i++)
+                    PdfReader reader = new PdfReader(bytes);
+                    using (PdfStamper stamper = new PdfStamper(reader, stream))
                     {
-
-                        #region 20161206 - BotJava - Insert data for first 注文書
-                        // Insert 棚番号
-                        ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i - 1 + _tempk]["棚番号"].ToString(), blackFont), 500f, 575f, 0);
-                        // Insert 出庫番号
-                        ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i - 1 + _tempk]["組込番号"].ToString(), blackFont), 430f, 510f, 0);
-
-                        #endregion
-
-                        #region 20161206 - BotJava - Insert data for second 注文書
-                        if ((i + _tempk) < _dtbSource.Rows.Count)
+                        int _tempk = 0;
+                        int pages = reader.NumberOfPages;
+                        for (int i = 1; i <= pages; i++)
                         {
-                            //Insert 棚番号
-                            ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i + _tempk]["棚番号"].ToString(), blackFont), 500f, 287f, 0);
-                            //Insert 出庫番号
-                            ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i + _tempk]["組込番号"].ToString(), blackFont), 430f, 225f, 0);
-                        }
-                        #endregion
 
-                        _tempk++;
+                            #region 20161206 - BotJava - Insert data for first 注文書
+                            // Insert 棚番号
+                            ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i - 1 + _tempk]["棚番号"].ToString(), blackFont), 500f, 575f, 0);
+                            // Insert 出庫番号
+                            ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i - 1 + _tempk]["組込番号"].ToString(), blackFont), 430f, 510f, 0);
+
+                            #endregion
+
+                            #region 20161206 - BotJava - Insert data for second 注文書
+                            if ((i + _tempk) < _dtbSource.Rows.Count)
+                            {
+                                //Insert 棚番号
+                                ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i + _tempk]["棚番号"].ToString(), blackFont), 500f, 287f, 0);
+                                //Insert 出庫番号
+                                ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_CENTER, new Phrase(_dtbSource.Rows[i + _tempk]["組込番号"].ToString(), blackFont), 430f, 225f, 0);
+                            }
+                            #endregion
+
+                            _tempk++;
+                        }
                     }
+                    bytes = stream.ToArray();
                 }
-                bytes = stream.ToArray();
-            }
-            File.WriteAllBytes(_PathFile, bytes);
+                File.WriteAllBytes(_PathFile, bytes);
 
             }
             catch (Exception ex)
@@ -590,10 +590,32 @@ namespace AutoFixBCOrder
 
         public static void PrintPDFFile(string _PDFPath)
         {
-            Process.Start("LPR -S printerdnsalias -P raw '"+_PDFPath+"'");
+            Process.Start("LPR -S printerdnsalias -P raw '" + _PDFPath + "'");
         }
 
+        public static System.Data.DataTable AutoFind組込(System.Data.DataTable _dtbSeihin, System.Data.DataTable _dtbBuhin)
+        {
+            #region 20161223 - BotFjP - 日付と図面番号で 順番 
+            DataView _dvSeihin = new DataView(_dtbSeihin);
+            _dvSeihin.Sort = "納期,図面番号";
 
+            DataView _dvBuhin = new DataView(_dtbBuhin);
+            _dvBuhin.Sort = "納期,図面番号";
+            for (int i = 0; i < _dvBuhin.Table.Rows.Count - 1; i++)
+            {
+                _dvSeihin.Table.Rows[i]["組込番号"] = _dvBuhin.Table.Rows[i]["組込番号"].ToString();
+            }
+
+            _dtbSeihin = _dvSeihin.ToTable();
+            #endregion
+
+            #region 20161223 - BotFjP - add column 棚番号　注文番号
+            _dtbSeihin.Columns.Add("注文番号", typeof(string));
+            _dtbSeihin.Columns.Add("棚番号", typeof(string));
+            #endregion
+            return _dtbSeihin;
+
+        }
 
     }
 }

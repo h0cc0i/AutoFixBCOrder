@@ -118,8 +118,8 @@ namespace AutoFixBCOrder
 
 
                     }
-                    #region 20161220 - BotFJP - Set Data Table 図面番号　受注番号　組込番号 to Data Table Param
-                    _dtbParam = CompareDataAndFormat(_dtbSeihin, _dtbBuhin);
+                    #region 20161223 - BotFJP - Set Data Table 図面番号　受注番号　組込番号 to Data Table Param
+                    _dtbParam =  Common.AutoFind組込(_dtbSeihin, _dtbBuhin);
                     #endregion
 
                     #region Get 注文番号　to dtb Param
@@ -440,7 +440,7 @@ namespace AutoFixBCOrder
                     if (_dtbBuhin.Rows[j]["Status"].ToString() == "True")
                     {
                         if ((_dtbSeihin.Rows[i]["納期"].ToString() == _dtbBuhin.Rows[j]["納期"].ToString()) &&
-                        (_dtbSeihin.Rows[i]["図面番号"].ToString() == _dtbBuhin.Rows[j]["図面番号"].ToString()))
+                        (_dtbSeihin.Rows[i]["図面番号"].ToString().Trim() == _dtbBuhin.Rows[j]["図面番号"].ToString().Trim()))
                         {
                             //Get Data 組込番号 for dtb製品
                             _dtbSeihin.Rows[i]["組込番号"] = _dtbBuhin.Rows[j]["組込番号"].ToString();

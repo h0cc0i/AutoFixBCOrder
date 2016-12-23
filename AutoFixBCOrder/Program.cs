@@ -23,6 +23,8 @@ namespace AutoFixBCOrder
             {
                 if (process.ProcessName == "EXCEL")
                     process.Kill();
+                if (process.ProcessName.ToString() == "Microsoft Excel")
+                    process.Kill();
                 if (process.ProcessName.StartsWith("AcroRd32.exe"))
                     process.Kill();
             }
