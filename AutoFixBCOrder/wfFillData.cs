@@ -114,12 +114,11 @@ namespace AutoFixBCOrder
                             #endregion
 
                         }
-                        #endregion
-
-
                     }
+                    #endregion
+
                     #region 20161223 - BotFJP - Set Data Table 図面番号　受注番号　組込番号 to Data Table Param
-                    _dtbParam =  Common.AutoFind組込(_dtbSeihin, _dtbBuhin);
+                    _dtbParam = Common.AutoFind組込(Common.GetOnlyBCData(_dtbSeihin) , Common.GetOnlyBCData(_dtbBuhin));
                     #endregion
 
                     #region Get 注文番号　to dtb Param

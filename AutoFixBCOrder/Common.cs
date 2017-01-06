@@ -596,17 +596,19 @@ namespace AutoFixBCOrder
         public static System.Data.DataTable AutoFind組込(System.Data.DataTable _dtbSeihin, System.Data.DataTable _dtbBuhin)
         {
             #region 20161223 - BotFjP - 日付と図面番号で 順番 
-            DataView _dvSeihin = new DataView(_dtbSeihin);
-            _dvSeihin.Sort = "納期,図面番号";
+            // DataView _dvSeihin = new DataView(_dtbSeihin);
+            _dtbSeihin.DefaultView.Sort = "納期,図面番号";
+            _dtbSeihin = _dtbSeihin.DefaultView.ToTable();
 
-            DataView _dvBuhin = new DataView(_dtbBuhin);
-            _dvBuhin.Sort = "納期,図面番号";
-            for (int i = 0; i < _dvBuhin.Table.Rows.Count - 1; i++)
+            //DataView _dvBuhin = new DataView(_dtbBuhin);
+            _dtbBuhin.DefaultView.Sort = "納期,図面番号";
+            _dtbBuhin = _dtbBuhin.DefaultView.ToTable();
+
+            for (int i = 0; i < _dtbBuhin.Rows.Count - 1; i++)
             {
-                _dvSeihin.Table.Rows[i]["組込番号"] = _dvBuhin.Table.Rows[i]["組込番号"].ToString();
+                _dtbSeihin.Rows[i]["組込番号"] = _dtbBuhin.Rows[i]["組込番号"].ToString();
             }
-
-            _dtbSeihin = _dvSeihin.ToTable();
+            _dtbSeihin.AcceptChanges();
             #endregion
 
             #region 20161223 - BotFjP - add column 棚番号　注文番号
@@ -616,6 +618,25 @@ namespace AutoFixBCOrder
             return _dtbSeihin;
 
         }
+
+        #region 20170105 - HonC - Get only BC row
+        public static System.Data.DataTable GetOnlyBCData(System.Data.DataTable _dtbSource)
+        {
+            string[] _listparam = { "M","B"};           // MF__ B___
+            if (_dtbSource.Rows.Count > 0)
+            {
+                foreach (DataRow _row in _dtbSource.Rows)
+                {
+                    if (!(_row["図面番号"].ToString().Length == 6) ||(_listparam.Contains( _row["図面番号"].ToString().PadLeft(1))))
+                    {
+                        _row.Delete();
+                    }
+                }
+                _dtbSource.AcceptChanges();
+            }
+            return _dtbSource;
+        }
+        #endregion
 
     }
 }
