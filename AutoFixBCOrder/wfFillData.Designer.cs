@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(wfFillData));
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -41,10 +42,11 @@
             this.label1 = new System.Windows.Forms.Label();
             this.lbnMessage = new System.Windows.Forms.Label();
             this.prBar = new System.Windows.Forms.ProgressBar();
+            this.label2 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.dtgSource = new System.Windows.Forms.DataGridView();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.label2 = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -223,6 +225,18 @@
             this.prBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.prBar.TabIndex = 2;
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label2.ForeColor = System.Drawing.Color.Blue;
+            this.label2.Location = new System.Drawing.Point(824, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(94, 45);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "v1.0";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // panel3
             // 
             this.panel3.Controls.Add(this.dtgSource);
@@ -249,17 +263,9 @@
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
             // 
-            // label2
+            // timer1
             // 
-            this.label2.AutoSize = true;
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.ForeColor = System.Drawing.Color.Blue;
-            this.label2.Location = new System.Drawing.Point(824, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(94, 45);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "v1.0";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // wfFillData
             // 
@@ -308,5 +314,6 @@
         private System.Windows.Forms.ProgressBar prBar;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Timer timer1;
     }
 }

@@ -25,6 +25,8 @@ namespace AutoFixBCOrder
         DataTable _dtbSourceExcel; // List 図面番号　と　注文番号　Convert from PDf file
         string _newPathPdf = string.Empty;
         string _PathSourcePDF = string.Empty;
+        string _outputPDF = string.Empty;
+        List<string> _listPDF = new List<string>();
         #endregion
         public wfFillData()
         {
@@ -62,7 +64,9 @@ namespace AutoFixBCOrder
         #region 20161213 - BotFJP - Event btnParam click
         private void btnParam_Click(object sender, EventArgs e)
         {
-
+            timer1.Interval = 1000;
+            prBar.Maximum = 100;
+            prBar.Value = 0;
             try
             {
                 OpenFileDialog _of = new OpenFileDialog();
@@ -73,58 +77,106 @@ namespace AutoFixBCOrder
                 // Read multiple file Excel
                 if (_of.ShowDialog() == DialogResult.OK)
                 {
+                    _listPDF = new List<string>();
                     _dtbSeihin = new DataTable();
                     _dtbBuhin = new DataTable();
                     _dtbJuchuu = new DataTable();
 
                     Cursor.Current = Cursors.WaitCursor;
                     #region 20161220 - BotFjP - Auto Get Data form Excel to Data Table
+                    timer1.Enabled = true;
+                    timer1.Start();
                     for (int i = 0; i < _of.FileNames.Count(); i++)
                     {
                         if (_of.FileNames[i].Contains("製品負荷"))
                         {
                             System.Data.DataTable _dtbTemp = Common.GetDataTable(_of.FileNames[i]);
                             _dtbSeihin = SeihinAutoFixExcelFileCSVConvertXLS(_dtbTemp);
-
+                            lbnMessage.Text = "処理中。。。";
+                            for (int j = 0; j < 20; j++)
+                            {
+                                timer1.Tick += new EventHandler(timer1_Tick);
+                            }
                         }
                         else if (_of.FileNames[i].Contains("部品負荷"))
                         {
                             _dtbBuhin = BuhinAutoFixExcelFileCSVConvertXLS(Common.GetDataTable(_of.FileNames[i]));
-
+                            lbnMessage.Text = "処理中。。。";
+                            for (int j = 0; j < 20; j++)
+                            {
+                                timer1.Tick += new EventHandler(timer1_Tick);
+                            }
                         }
                         else if (_of.FileNames[i].Contains("受注"))
                         {
                             _dtbJuchuu = Common.GetDataTable(_of.FileNames[i]);
                             var _ListParam = new int[] { 0, 12, 17, 21 };
                             _dtbJuchuu = Common.XLSDataToDataTableFormat(_dtbJuchuu, _ListParam);
+                            lbnMessage.Text = "処理中。。。";
+                            for (int j = 0; j < 20; j++)
+                            {
+                                timer1.Tick += new EventHandler(timer1_Tick);
+                            }
                         }
                         else if (_of.FileNames[i].Contains(".pdf"))
                         {
                             _PathSourcePDF = _of.FileNames[i].ToString();
+                            lbnMessage.Text = "処理中。。。";
+
+                            // => import to list pdf for execute multi pdf
+                            
+                            _listPDF.Add(_PathSourcePDF);
+
+
+                            for (int j = 0; j < 20; j++)
+                            {
+                                timer1.Tick += new EventHandler(timer1_Tick);
+                            }
                         }
                         else
                         {
                             #region 20161220 - BotFjP - Get Data BC Source Excel from Excel
-                            _dtbSourceExcel = Common.CustomGetDataTable(_of.FileNames[i]);
+                            //_dtbSourceExcel = Common.CustomGetDataTable(_of.FileNames[i]);
+                            _dtbSourceExcel = Common.ReadPDFToDataTable("");
 
-                            //20161206 - BotJava - add column for datatable
-                            _dtbSourceExcel.Columns.Add("組込番号", typeof(String));
-                            _dtbSourceExcel.Columns.Add("棚番号", typeof(String));
-                            dtgSource.DataSource = _dtbSourceExcel;
+                            ////20161206 - BotJava - add column for datatable
+                            //_dtbSourceExcel.Columns.Add("組込番号", typeof(String));
+                            //_dtbSourceExcel.Columns.Add("棚番号", typeof(String));
+                            //dtgSource.DataSource = _dtbSourceExcel;
                             #endregion
-
+                            lbnMessage.Text = "処理中。。。";
+                            for (int j = 0; j < 20; j++)
+                            {
+                                timer1.Tick += new EventHandler(timer1_Tick);
+                            }
                         }
                     }
                     #endregion
 
+                    #region 20170116 - BotFJP - Get 注文番号　and MergePDF
+                    _dtbSourceExcel = new DataTable();
+                    //read each item int listPDF
+                    foreach (var item in _listPDF)
+                    {
+                        _dtbSourceExcel.Merge(Common.ReadPDFToDataTable(item));
+                    }
+
+                    //Merge PDF
+                    _PathSourcePDF = Common.MergePDF(_listPDF, @"C:\Users\HonC\Desktop\MergePDF.pdf");
+
+                    _dtbSourceExcel.Columns.Add("組込番号", typeof(String));
+                    _dtbSourceExcel.Columns.Add("棚番号", typeof(String));
+                    dtgSource.DataSource = _dtbSourceExcel;
+                    #endregion
+
                     #region 20161223 - BotFJP - Set Data Table 図面番号　受注番号　組込番号 to Data Table Param
-                    _dtbParam = Common.AutoFind組込(Common.GetOnlyBCData(_dtbSeihin) , Common.GetOnlyBCData(_dtbBuhin));
+                    _dtbParam = Common.AutoFind組込(Common.GetOnlyBCData(_dtbSeihin), Common.GetOnlyBCData(_dtbBuhin));
                     #endregion
 
                     #region Get 注文番号　to dtb Param
-                    for (int i = _dtbParam.Rows.Count - 1; i > 0; i--)
+                    for (int i = _dtbParam.Rows.Count - 1; i >= 0; i--)
                     {
-                        for (int j = _dtbJuchuu.Rows.Count - 1; j > 0; j--)
+                        for (int j = _dtbJuchuu.Rows.Count - 1; j >= 0; j--)
                         {
                             if (_dtbParam.Rows[i]["受注番号"].ToString() == _dtbJuchuu.Rows[j]["受注番号"].ToString())
                             {
@@ -137,7 +189,7 @@ namespace AutoFixBCOrder
                     #region 20161219 - BotFJP - Get 棚番号 to dtb Param
                     if (_dtbSourceTana != null)
                     {
-                        for (int i = 0; i < _dtbParam.Rows.Count - 1; i++)
+                        for (int i = 0; i < _dtbParam.Rows.Count; i++)
                         {
                             for (int j = 0; j < _dtbSourceTana.Rows.Count; j++)
                             {
@@ -183,6 +235,9 @@ namespace AutoFixBCOrder
 
                         }
                     }
+
+                    lbnMessage.Text = "出来ました。";
+                    prBar.Value = 0;
                 }
                 Cursor.Current = Cursors.Default;
             }
@@ -505,6 +560,24 @@ namespace AutoFixBCOrder
         private void btnIn_Click(object sender, EventArgs e)
         {
             //  Common.PrintPDFFile(_PathSource);
+            OpenFileDialog _of = new OpenFileDialog();
+            _of.Filter = "All Files (*.*)|*.*";
+            _of.FilterIndex = 1;
+            _of.Multiselect = true;
+            List<string> _ListPDF = new List<string>();
+
+            if (_of.ShowDialog() == DialogResult.OK)
+            {
+                foreach (var item in _of.FileNames)
+                {
+                    if (item.Contains(".pdf"))
+                    {
+                        _ListPDF.Add(item);
+                    }
+                }
+
+                Common.MergePDF(_ListPDF, @"C:\Users\HonC\Desktop\MergePDF.pdf");
+            }
         }
         #endregion
 
@@ -541,6 +614,16 @@ namespace AutoFixBCOrder
             }
         }
         #endregion
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (prBar.Value != 100)
+            {
+                prBar.Value++;
+            }
+            else
+                timer1.Stop();
+        }
     }
 }
 

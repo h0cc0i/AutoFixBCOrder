@@ -12,6 +12,8 @@ using iTextSharp.text.pdf;
 using iTextSharp.text;
 using System.Diagnostics;
 using Microsoft.Win32;
+using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
 
 namespace AutoFixBCOrder
 {
@@ -479,7 +481,7 @@ namespace AutoFixBCOrder
             _dtbSource.AcceptChanges();
             _dtbSource.Rows[0].Delete();
             #endregion
-
+            _dtbSource.AcceptChanges();
             return _dtbSource;
         }
 
@@ -604,7 +606,7 @@ namespace AutoFixBCOrder
             _dtbBuhin.DefaultView.Sort = "納期,図面番号";
             _dtbBuhin = _dtbBuhin.DefaultView.ToTable();
 
-            for (int i = 0; i < _dtbBuhin.Rows.Count - 1; i++)
+            for (int i = 0; i < _dtbBuhin.Rows.Count ; i++)
             {
                 _dtbSeihin.Rows[i]["組込番号"] = _dtbBuhin.Rows[i]["組込番号"].ToString();
             }
@@ -615,6 +617,8 @@ namespace AutoFixBCOrder
             _dtbSeihin.Columns.Add("注文番号", typeof(string));
             _dtbSeihin.Columns.Add("棚番号", typeof(string));
             #endregion
+
+            _dtbSeihin.AcceptChanges();
             return _dtbSeihin;
 
         }
@@ -622,12 +626,12 @@ namespace AutoFixBCOrder
         #region 20170105 - HonC - Get only BC row
         public static System.Data.DataTable GetOnlyBCData(System.Data.DataTable _dtbSource)
         {
-            string[] _listparam = { "M","B"};           // MF__ B___
+            string[] _listparam = { "M", "B" };           // MF__ B___
             if (_dtbSource.Rows.Count > 0)
             {
                 foreach (DataRow _row in _dtbSource.Rows)
                 {
-                    if (!(_row["図面番号"].ToString().Length == 6) ||(_listparam.Contains( _row["図面番号"].ToString().PadLeft(1))))
+                    if (!(_row["図面番号"].ToString().Length == 6) || (_listparam.Contains(_row["図面番号"].ToString().PadLeft(1))))
                     {
                         _row.Delete();
                     }
@@ -635,6 +639,99 @@ namespace AutoFixBCOrder
                 _dtbSource.AcceptChanges();
             }
             return _dtbSource;
+        }
+        #endregion
+
+        #region 20170113 - ReadPDF
+        public static System.Data.DataTable ReadPDFToDataTable(string _Path)
+        {
+            System.Data.DataTable _dtb = new System.Data.DataTable();
+            _dtb.Columns.Add("品名", typeof(string));
+            _dtb.Columns.Add("注文番号", typeof(string));
+            StringBuilder text = new StringBuilder();
+            if (File.Exists(_Path))
+            {
+                PdfReader _pdfReader = new PdfReader(_Path);
+                for (int page = 1; page <= _pdfReader.NumberOfPages; page++)
+                {
+                    ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                    string currentText = PdfTextExtractor.GetTextFromPage(_pdfReader, page, strategy);
+
+                    currentText = Encoding.UTF8.GetString(ASCIIEncoding.Convert(Encoding.Default, Encoding.UTF8, Encoding.Default.GetBytes(currentText)));
+                    text.Append(currentText);
+                }
+                _pdfReader.Close();
+                string[] _list = text.ToString().Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+                foreach (var item in _list)
+                {
+                    if (item.Contains("*"))
+                    {
+                        DataRow _newr = _dtb.NewRow();
+                        _newr["注文番号"] = item.ToString();
+                        _dtb.Rows.Add(_newr);
+                    }
+                }
+                //get 品名 and delete row not use
+                for (int i = _dtb.Rows.Count - 1; i >= 0; i = i - 2)
+                {
+                    _dtb.Rows[i - 1]["品名"] = _dtb.Rows[i]["注文番号"].ToString().Replace("*", "");
+                    _dtb.Rows[i].Delete();
+                }
+
+                foreach (DataRow _row in _dtb.Rows)
+                {
+                    _row["注文番号"] = _row["注文番号"].ToString().Split('*')[1];
+                }
+                if (_dtb.Rows.Count % 2 == 1)
+                {
+                    DataRow _row = _dtb.NewRow();
+                    _row["注文番号"] = " ";
+                    _dtb.Rows.Add(_row);
+                }
+
+                _dtb.AcceptChanges();
+            }
+            return _dtb;
+        }
+        #endregion
+
+        #region 20170116 - Merge PDF
+        public static string MergePDF(List<string> _ListPDF, string OutFile)
+        {
+            if (File.Exists(OutFile))
+            {
+                File.Delete(OutFile);
+            }
+            foreach (var item in _ListPDF)
+            {
+                using (FileStream stream = new FileStream(OutFile, FileMode.Create))
+                using (Document doc = new Document())
+                using (PdfCopy pdf = new PdfCopy(doc, stream))
+                {
+                    doc.Open();
+
+                    PdfReader reader = null;
+                    PdfImportedPage page = null;
+
+                    //fixed typo
+                    _ListPDF.ForEach(file =>
+                    {
+                        reader = new PdfReader(file);
+
+                        for (int i = 0; i < reader.NumberOfPages; i++)
+                        {
+                            page = pdf.GetImportedPage(reader, i + 1);
+                            pdf.AddPage(page);
+                        }
+
+                        pdf.FreeReader(reader);
+                        reader.Close();
+                        //File.Delete(file);
+                    });
+                }
+            }
+
+            return OutFile;
         }
         #endregion
 
