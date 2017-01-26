@@ -58,7 +58,14 @@
     <Compile Include="AutoFixBCOrder.Designer.cs">
       <DependentUpon>AutoFixBCOrder.cs</DependentUpon>
     </Compile>
+    <Compile Include="AutoSendEmail.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AutoSendEmail.Designer.cs">
+      <DependentUpon>AutoSendEmail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Common.cs" />
+    <Compile Include="ObjEmail.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -74,6 +81,9 @@
     </Compile>
     <EmbeddedResource Include="AutoFixBCOrder.resx">
       <DependentUpon>AutoFixBCOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AutoSendEmail.resx">
+      <DependentUpon>AutoSendEmail.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -138,6 +148,8 @@
     <None Include="Resources\Apps-Pdf-icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Send.ico" />
+    <None Include="Resources\E-mail.ico" />
     <Content Include="Resources\open-file-icon.png" />
     <None Include="Resources\Zerode-Plump-Device-Printer.ico" />
     <None Include="Resources\open-file-icon1.png" />

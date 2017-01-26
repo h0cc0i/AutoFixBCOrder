@@ -14,6 +14,8 @@ using System.Diagnostics;
 using Microsoft.Win32;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
+using Microsoft.Office.Interop.Word;
+using System.Net.Mail;
 
 namespace AutoFixBCOrder
 {
@@ -351,7 +353,7 @@ namespace AutoFixBCOrder
                 }
 
                 //set border for this range
-                Range _rg = excelWorkSheet.get_Range("A2", "H" + (table.Rows.Count + 2).ToString());
+                Microsoft.Office.Interop.Excel.Range _rg = excelWorkSheet.get_Range("A2", "H" + (table.Rows.Count + 2).ToString());
                 _rg.Borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
 
                 //Auto fit Columns width for this range
@@ -605,14 +607,14 @@ namespace AutoFixBCOrder
             //DataView _dvBuhin = new DataView(_dtbBuhin);
             _dtbBuhin.DefaultView.Sort = "納期,図面番号";
             _dtbBuhin = _dtbBuhin.DefaultView.ToTable();
+            
+                for (int i = 0; i < _dtbBuhin.Rows.Count; i++)
+                {
+                    _dtbSeihin.Rows[i]["組込番号"] = _dtbBuhin.Rows[i]["組込番号"].ToString();
+                }
+                _dtbSeihin.AcceptChanges();
 
-            for (int i = 0; i < _dtbBuhin.Rows.Count ; i++)
-            {
-                _dtbSeihin.Rows[i]["組込番号"] = _dtbBuhin.Rows[i]["組込番号"].ToString();
-            }
-            _dtbSeihin.AcceptChanges();
             #endregion
-
             #region 20161223 - BotFjP - add column 棚番号　注文番号
             _dtbSeihin.Columns.Add("注文番号", typeof(string));
             _dtbSeihin.Columns.Add("棚番号", typeof(string));
@@ -705,7 +707,7 @@ namespace AutoFixBCOrder
             foreach (var item in _ListPDF)
             {
                 using (FileStream stream = new FileStream(OutFile, FileMode.Create))
-                using (Document doc = new Document())
+                using (iTextSharp.text.Document doc = new iTextSharp.text.Document())
                 using (PdfCopy pdf = new PdfCopy(doc, stream))
                 {
                     doc.Open();
@@ -735,5 +737,45 @@ namespace AutoFixBCOrder
         }
         #endregion
 
+
+        #region 20170118 - Send Email
+        public static bool AutoSendEmail(ObjEmail _obj)
+        {
+            try
+            {
+                System.Net.Mail.MailMessage mail = new System.Net.Mail.MailMessage();
+                
+                SmtpClient SmtpServer = new SmtpClient(_obj.SmtpServer);
+                mail.From = new MailAddress(_obj.email);
+                foreach (var item in _obj.desEmail)
+                {
+                    mail.To.Add(item);
+                }
+                mail.Subject = _obj.Subject;
+                mail.Body = _obj.Body;
+                System.Net.Mail.Attachment attachment;
+                attachment = new System.Net.Mail.Attachment(_obj.attachmentPath);
+                mail.Attachments.Add(attachment);
+                
+                SmtpServer.Port = _obj.Port;
+                SmtpServer.Credentials = new System.Net.NetworkCredential(_obj.email, _obj.password);
+
+                if (_obj.IsGmail)
+                {
+                    SmtpServer.UseDefaultCredentials = false;
+                    SmtpServer.EnableSsl = true;
+                }
+                else
+                SmtpServer.EnableSsl = false;
+                
+                SmtpServer.Send(mail);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        #endregion
     }
 }

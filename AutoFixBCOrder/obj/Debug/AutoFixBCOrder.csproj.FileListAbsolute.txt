@@ -10,3 +10,4 @@ E:\GITHUB\AutoFixBCOrder\AutoFixBCOrder\obj\Debug\AutoFixBCOrder.Properties.Reso
 E:\GITHUB\AutoFixBCOrder\AutoFixBCOrder\obj\Debug\AutoFixBCOrder.exe
 E:\GITHUB\AutoFixBCOrder\AutoFixBCOrder\obj\Debug\AutoFixBCOrder.pdb
 E:\GITHUB\AutoFixBCOrder\AutoFixBCOrder\obj\Debug\AutoFixBCOrder.csprojResolveAssemblyReference.cache
+E:\GITHUB\AutoFixBCOrder\AutoFixBCOrder\obj\Debug\AutoFixBCOrder.AutoSendEmail.resources
